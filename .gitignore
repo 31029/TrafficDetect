@@ -1,0 +1,10 @@
+.vscode/
+build/
+detect_result/
+test_result/
+model*/
+font/
+nets/
+VOCdevkit/
+utils/
+__pycache__/

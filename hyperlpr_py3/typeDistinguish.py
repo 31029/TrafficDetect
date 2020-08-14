@@ -44,7 +44,7 @@ def Getmodel_tensorflow(nb_classes):
                   metrics=['accuracy'])
     return model
 
-from PATH import ProjectPath
+from gui.PATH import ProjectPath
 model = Getmodel_tensorflow(5)
 model.load_weights(ProjectPath + "mytraffic_cv\\model\\plate_type.h5")
 model.save( ProjectPath + "mytraffic_cv\\model\\plate_type.h5")

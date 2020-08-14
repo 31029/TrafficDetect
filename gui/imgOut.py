@@ -1,7 +1,7 @@
 from os.path import split
 import sys, os
 
-from PATH import run_a_red_light_img_path, run_a_red_lightpath
+from gui.PATH import run_a_red_light_img_path, run_a_red_lightpath
 from PyQt5.QtGui import QPixmap
 from PyQt5.QtWidgets import QMessageBox
 
@@ -10,8 +10,7 @@ class imgOut:
         self.ui = wnd.ui
         self.wnd = wnd
         self.current_img_index = 0
-        self.imgnames_list = list(os.listdir(run_a_red_light_img_path))
-
+        self.imgnames_list = []
         self.ui.before.setEnabled(False)
         self.ui.delete_info.setEnabled(False)
 

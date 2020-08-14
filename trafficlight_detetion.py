@@ -1,7 +1,7 @@
 import cv2
 from PIL import Image
 import os
-from PATH import trafficoutputpath
+from gui.PATH import trafficoutputpath
 
 def check(input_path):
     img=cv2.imread(input_path)

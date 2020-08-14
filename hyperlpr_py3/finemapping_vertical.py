@@ -3,7 +3,7 @@ from keras.layers import Conv2D, Input,MaxPool2D, Reshape,Activation,Flatten, De
 from keras.models import Model, Sequential
 from keras.layers.advanced_activations import PReLU
 from keras.optimizers import adam
-from PATH import model_model12
+from gui.PATH import model_model12
 import numpy as np
 
 

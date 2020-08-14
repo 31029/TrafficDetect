@@ -6,7 +6,7 @@ from time import sleep,gmtime
 import xlsxwriter
 from PyQt5.QtWidgets import QFileDialog, QMessageBox
 
-import PATH
+import gui.PATH as PATH
 
 
 class InfoOut:
@@ -22,7 +22,7 @@ class InfoOut:
         dirpath = ''
         try:
             time = PATH.getValue('VedioDate')
-            timelist = time.split(' ')
+            timelist = time.split('_')
             VedioDate = timelist[5]+'_'+timelist[1]+'_'+timelist[3]
         except:
             crutime = gmtime()

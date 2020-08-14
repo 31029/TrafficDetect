@@ -5,7 +5,7 @@ from keras.layers import *
 import numpy as np
 import random
 import string
-from PATH import model_ocr_plate_all_w_rnn_2
+from gui.PATH import model_ocr_plate_all_w_rnn_2
 
 import cv2
 from . import e2emodel as model

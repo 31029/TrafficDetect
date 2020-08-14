@@ -1,7 +1,7 @@
 
 import cv2
 import numpy as np
-from PATH import model_cascade
+from gui.PATH import model_cascade
 
 
 watch_cascade = cv2.CascadeClassifier(model_cascade)

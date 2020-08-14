@@ -6,7 +6,7 @@ import numpy as np
 import cv2
 
 
-def detect(video_inputpath,video_outpath, light_Pos):
+def detect(video_inputpath,video_outpath):
     import keras
     from yolo import YOLO
     yolo = YOLO()
@@ -23,22 +23,16 @@ def detect(video_inputpath,video_outpath, light_Pos):
     ref,frame=video_reader.read()
     trfn=0
     carn=0
-    i=0
-    lrx=920
-    rrx=880
-    carnums=0
-    carlist=[]
+    
     while(ref):
         # 读取某一帧
         # 格式转变，BGRtoRGB
-        # i+=1
         frame = cv2.cvtColor(frame,cv2.COLOR_BGR2RGB)
         # 转变成Image
         frame = Image.fromarray(np.uint8(frame))
         
         # 进行检测
-        # if i% 5==0:
-        r_image,i,m= yolo.detect_image(frame,trfn,carn,lrx,rrx,carnums,carlist)
+        r_image,i,m= yolo.detect_image(frame,trfn,carn)
         draw = ImageDraw.Draw(r_image)
         draw.line((260,850,1500,850),fill='red',width=5)
         trfn=i
@@ -50,6 +44,11 @@ def detect(video_inputpath,video_outpath, light_Pos):
         frame = cv2.cvtColor(frame,cv2.COLOR_RGB2BGR)
         video_writer.write(frame)
         ref,frame=video_reader.read()
+
+    video_reader.release()
+    video_writer.release()
+    yolo.close_session()
+    keras.backend.clear_session()
 
 
 def detect2(video_inputpath,video_outpath):

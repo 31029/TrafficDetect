@@ -9,7 +9,7 @@ import scipy
 import time
 import scipy.signal as l
 
-from PATH import ProjectPath
+from gui.PATH import ProjectPath
 
 
 

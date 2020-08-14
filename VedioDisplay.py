@@ -6,30 +6,51 @@ import os
 import threading
 
 from PyQt5.QtCore import QThread, QObject, pyqtSignal, pyqtSlot
-from PyQt5.QtWidgets import QFileDialog, QMessageBox, QHeaderView, QDialog
+from PyQt5.QtWidgets import QFileDialog, QMessageBox, QHeaderView, QDialog, QInputDialog, QLineEdit
 from PyQt5.QtGui import QImage, QPixmap
 from PyQt5.QtGui import  QStandardItemModel,QStandardItem
 
-import PATH
+import gui.PATH as PATH
 from myvideo import detect
 from gui.Ui_help import Ui_Dialog
+from gui.Ui_RoadChoose import Ui_Dialog_chooseRoad
 
 
 class helpdialog(QDialog):
-    """帮助手册"""
+    """帮助手册子菜单实现类"""
     def __init__(self):
         QDialog.__init__(self)
         self.ui = Ui_Dialog()
         self.ui.setupUi(self)
 
 
+class roadchoosedialog(QDialog):
+    """设置路口名"""
+    def __init__(self):
+        QDialog.__init__(self)
+        self.ui = Ui_Dialog_chooseRoad()
+        self.ui.setupUi(self)
+        self.ui.chooseRoad.addItem('所有路口')
+        self.ui.chooseRoad.addItems(PATH.get_allroads())
+        self.ui.chooseRoad.currentIndexChanged.connect(self.set_roadinfo)
+        
+    def set_roadinfo(self):
+        if self.ui.chooseRoad.currentText() == "所有路口":
+            pass
+        else:
+            print("1")
+            try:
+                self.ui.choose_time.addItems(PATH.get_chosed_roadinfo(self.ui.chooseRoad.currentText()))
+            except:
+                dig = QMessageBox.information(self, "提示", "当前路口没有处理视频！", QMessageBox.Yes)
+
+
 
 class Worker(QObject):
-    def __init__(self, in_name, out_name, light_Pos: Tuple):
+    def __init__(self, in_name, out_name):
         super().__init__()
         self.fileName = in_name
         self.video_outname = out_name
-        self.light_Pos = light_Pos
 
     finished = pyqtSignal()
     show_processed_vedio = pyqtSignal()
@@ -49,7 +70,6 @@ class Display:
         self.ui = mainWnd.ui
         self.stop = False
         
-
         #界面所有按钮的初始化
         self.ui.Open.setEnabled(True)
         self.ui.Close.setEnabled(False)
@@ -62,9 +82,13 @@ class Display:
         self.ui.Close.clicked.connect(self.Close)
         self.ui.Continue.clicked.connect(self.Stop)
         self.ui.Api_button.clicked.connect(self.Api_button)
+
+        #菜单栏设置
         self.ui.actionDelet_existdata.triggered.connect(self.Delet_exist_data)
         self.ui.delete_cache.triggered.connect(self.Delet_cache_data)
         self.ui.actionHelp.triggered.connect(self.helpdig)
+        self.ui.action_SetRoad.triggered.connect(self.set_road)
+        self.ui.action_choose_road.triggered.connect(self.choose_road)
 
         # 创建一个关闭事件并设为未触发
         self.stopEvent = threading.Event()
@@ -75,16 +99,17 @@ class Display:
 
 
     def Open(self):
-        """打开视频原文件"""
+        """打开视频原文件按钮响应函数"""
         self.fileName, self.fileType = QFileDialog.getOpenFileName(self.mainWnd, 'Choose file', '', '*.avi')
         self.video_outname = ''
         
         if self.fileName is None or '.avi' not in self.fileName:
             return
-        if 'out' not in self.video_outname:
+        if 'out' not in self.video_outname: 
             VedioDate = time.ctime(os.path.getctime(self.fileName))
-            PATH.setValue('VedioDate', VedioDate)
-            self.video_outname = self.fileName.replace('.avi', '_out.avi')
+            VedioDate = VedioDate.replace(' ', "_").replace(':', '_').replace('__', '_')
+            PATH.setValue('CVedioDate', VedioDate)
+            self.video_outname = PATH.run_a_red_light_vedio_path + PATH.get_roadname() + PATH.get_VedioDate()
 
         # 创建视频显示线程
         self.cap = cv2.VideoCapture(self.fileName)
@@ -94,10 +119,12 @@ class Display:
 
 
     def Stop(self):
+        """暂停按钮响应函数"""
         self.stop = not self.stop
 
 
     def Close(self):
+        """关闭按钮响应函数"""
         # 关闭事件设为触发，关闭视频播放
         self.stopEvent.set()
         sleep(0.1)
@@ -105,6 +132,10 @@ class Display:
 
 
     def Display(self):
+        """视频展示函数"""
+        if self.mainWnd.checkstats is True:
+            self.stop = False
+
         self.ui.Open.setEnabled(False)
         self.ui.Close.setEnabled(True)
         self.ui.Continue.setEnabled(True)
@@ -140,11 +171,12 @@ class Display:
         """检测API接口"""
         print(self.fileName)
         print(self.video_outname)
+        PATH.cheakFolders()
         
         tuple_Pos = self.mainWnd.x, self.mainWnd.y
         print(tuple_Pos)
         print(tuple_Pos[0])
-        self.worker = Worker(self.fileName, self.video_outname, tuple_Pos)
+        self.worker = Worker(self.fileName, self.video_outname)
         self.worker.finished.connect(self.thread.quit)
         self.thread.started.connect(self.worker.work)
         self.worker.show_processed_vedio.connect(self.show_processed_vedio)
@@ -238,4 +270,18 @@ class Display:
         self.hlpdig.show()
         
 
+    def set_road(self):
+        """路口名称设置"""
+        text, okPressed = QInputDialog.getText(self.mainWnd, "提示","输入当前路口：", QLineEdit.Normal, "")
+        if okPressed and text != '':
+            print("当前检测路口为:" + text)
+            PATH.setValue('RoadName', text)
+            self.mainWnd.ui.label_road_text.setText(PATH.get_roadname())
+        else:
+            self.mainWnd.ui.label_road_text.setText(PATH.get_roadname())
         
+
+    def choose_road(self):
+        """选择已经处理的视频"""
+        self.choosedig = roadchoosedialog()
+        self.choosedig.show()

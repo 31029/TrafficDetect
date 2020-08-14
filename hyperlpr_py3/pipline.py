@@ -16,7 +16,7 @@ import json
 import sys
 from . import typeDistinguish as td
 import imp
-from PATH import ProjectPath
+from gui.PATH import ProjectPath
 
 imp.reload(sys)
 fontC = ImageFont.truetype(ProjectPath + "mytraffic_cv\\Font\\platech.ttf", 14, 0);

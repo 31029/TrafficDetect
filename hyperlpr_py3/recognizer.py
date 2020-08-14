@@ -4,7 +4,7 @@ from keras.layers import Dense, Dropout, Activation, Flatten
 from keras.layers import Conv2D,MaxPool2D
 from keras.optimizers import SGD
 from keras import backend as K
-from PATH import ProjectPath
+from gui.PATH import ProjectPath
 K.set_image_dim_ordering('tf')
 
 

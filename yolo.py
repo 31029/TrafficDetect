@@ -12,7 +12,7 @@ from utils.utils import letterbox_image
 from trafficlight_detetion import check,check1
 from lprcmd import cartag
 import cv2
-from PATH import caroutputpath,trafficoutputpath,resultpath,run_a_red_lightpath,run_a_red_light_img_path,caridpath
+from gui.PATH import caroutputpath,trafficoutputpath,resultpath,run_a_red_lightpath,run_a_red_light_img_path,caridpath
 class YOLO(object):
     _defaults = {
         "model_path": 'model_data/yolo_weights.h5',

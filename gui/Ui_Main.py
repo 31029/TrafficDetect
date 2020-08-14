@@ -191,7 +191,7 @@ class Ui_MainWindow(object):
         _translate = QtCore.QCoreApplication.translate
         MainWindow.setWindowTitle(_translate("MainWindow", "道路违法检测系统"))
         self.DisplayLabel.setText(_translate("MainWindow", "                                                 视频播放区域"))
-        self.label_road.setText(_translate("MainWindow", "检测路口："))
+        self.label_road.setText(_translate("MainWindow", "监控路口："))
         self.Button_GetPos.setText(_translate("MainWindow", "参数配置"))
         self.Continue.setText(_translate("MainWindow", "暂停/继续"))
         self.Close.setText(_translate("MainWindow", "关闭"))

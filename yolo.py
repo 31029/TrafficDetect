@@ -12,12 +12,12 @@ from utils.utils import letterbox_image
 from trafficlight_detetion import check,check1
 from lprcmd import cartag
 import cv2
-from gui.PATH import caroutputpath,trafficoutputpath,resultpath,run_a_red_lightpath,run_a_red_light_img_path,caridpath
+from gui.PATH import caroutputpath,trafficoutputpath,resultpath,run_a_red_lightpath,run_a_red_light_img_path,caridpath,model_path,classes_path,anchors_path
 class YOLO(object):
     _defaults = {
-        "model_path": 'model_data/yolo_weights.h5',
-        "anchors_path": 'model_data/yolo_anchors.txt',
-        "classes_path": 'model_data/coco_classes.txt',
+        "model_path": model_path,
+        "anchors_path": anchors_path,
+        "classes_path": classes_path,
         "score" : 0.5,
         "iou" : 0.3,
         "model_image_size" : (416, 416)
@@ -187,7 +187,7 @@ class YOLO(object):
 
                             
                             f1=open(resultpath, "a", encoding='utf-8')
-                            f2=open(run_a_red_lightpath, "a", encoding='utf-8') 
+                            f2=open(run_a_red_lightpath(), "a", encoding='utf-8') 
                             for cn ,cf in list(enumerate(out_classes)):
                                 if cf!=2:
                                     continue
@@ -250,7 +250,7 @@ class YOLO(object):
                                                 fill='red')
                                             draw.text((right , top+40, right+60 , top+120), "闯红灯", fill=(0, 0, 0), font=font)
                                             if ch is not '00000' and ch[1] is not '1' :
-                                                image.save(run_a_red_light_img_path+ch+'_闯红灯'+".jpg")
+                                                image.save(run_a_red_light_img_path()+ch+'_闯红灯'+".jpg")
                                                 
                             f2.close()
                             f1.close()
@@ -325,10 +325,13 @@ class YOLO(object):
                 img=image.crop((left , top , right , bottom ))
                 img.save(caridpath+str(carnums)+'.jpg') 
                 carid=cartag(caridpath+str(carnums)+'.jpg')
+                # print(carid)
+                print(carlist)
                 if carid in carlist:
                     continue
                 else:
-                    carlist.append(carid)
+                    if carid!='00000' and len(carid)==7:
+                        carlist.append(carid)
             
             # print("通过车辆数为{}".format(len(carlist)))
             # print(carlist)
@@ -337,7 +340,7 @@ class YOLO(object):
         draw.rectangle(
                 (1300,150,1900,200),
                 fill="white")
-        draw.text((1300,160,1900,180), "当前路口通过car的数量为:"+str(len(carlist)), fill="black",font=font) 
+        draw.text((1300,160,1900,180), "路口通过car的数量为:"+str(len(carlist)), fill="black",font=font) 
 
         del draw     
 
@@ -355,7 +358,7 @@ class YOLO(object):
         del draw
         # end = timer()
         # print(end - start) 
-        return image,trfn,carn
+        return image,trfn,carn,carnums,len(carlist), run_a_red_light,totalcarn
 
     def close_session(self):
         self.sess.close()

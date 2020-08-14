@@ -21,7 +21,7 @@ class imgOut:
 
     def img_init(self):
         """初始化img列表"""
-        self.imgnames_list = list(os.listdir(run_a_red_light_img_path))
+        self.imgnames_list = list(os.listdir(run_a_red_light_img_path()))
         if len(self.imgnames_list) != 0:
             self.display_info()
             self.ui.before.setEnabled(True)
@@ -64,14 +64,14 @@ class imgOut:
         a = []
         a.append('del:'+del_name)
         
-        os.remove(run_a_red_light_img_path + del_name)
-        with open(run_a_red_lightpath, 'r', encoding='UTF-8') as fp:
+        os.remove(run_a_red_light_img_path() + del_name)
+        with open(run_a_red_lightpath(), 'r', encoding='UTF-8') as fp:
             lines = fp.readlines()
             for i in range(len(lines)):
                 if del_name in lines[i]:
                      lines[i] = ''
             fp.close()
-        with open(run_a_red_lightpath, 'w', encoding='UTF-8') as fp:
+        with open(run_a_red_lightpath(), 'w', encoding='UTF-8') as fp:
             fp.writelines(lines)
 
         self.current_img_index = 0
@@ -85,7 +85,7 @@ class imgOut:
             m = str(m).replace('.jpg', '')
             self.ui.plate_number.setText(n)
             self.ui.illegal_type.setText(m)
-            self.ui.label.setPixmap(QPixmap(run_a_red_light_img_path + self.imgnames_list[self.current_img_index]))
+            self.ui.label.setPixmap(QPixmap(run_a_red_light_img_path() + self.imgnames_list[self.current_img_index]))
             self.ui.label.setScaledContents(True)
         except:
             box = QMessageBox.warning(self.wnd, "提示", "库存为空", QMessageBox.Yes)

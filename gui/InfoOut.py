@@ -29,16 +29,18 @@ class InfoOut:
             VedioDate = str(crutime.tm_year) + "_" + str(crutime.tm_mon) + "_" + str(crutime.tm_mday)
            
 
-        with open(PATH.run_a_red_lightpath, 'r', encoding='UTF-8') as fp:
+        with open(PATH.run_a_red_lightpath(), 'r', encoding='UTF-8') as fp:
             data = []
             data_dict = {}
             data = fp.readlines()
+            if '\n' in data:
+                data.remove('\n')
             data_row = len(data)
             for i in range(data_row):
                 plate_number, ilegal_type = data[i].split(' ')   
                 ilegal_type = ilegal_type.replace('\n','')
                 data_dict[plate_number] = ilegal_type
-        
+
         if choic_item == 'Excel文件':
             dirpath = QFileDialog.getSaveFileName(self.wnd, '选择保存路径', PATH.DeskTop_path + '违法记录_'+ VedioDate + '.xlsx', 'xlsx(*.xlsx)')
 

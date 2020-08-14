@@ -72,8 +72,7 @@ if __name__ == "__main__":
     display = Display(mainWnd)
     infoout = InfoOut(InfooutWindow)
     imgout = imgOut(illegalDialog)
-
+    
     mainWnd.show()#有了实例，就得让它显示，show()是QWidget的方法，用于显示窗口。
-
     sys.exit(app.exec_())
 

@@ -108,7 +108,7 @@
      </font>
     </property>
     <property name="text">
-     <string>检测路口：</string>
+     <string>监控路口：</string>
     </property>
    </widget>
    <widget class="QLabel" name="label_road_text">

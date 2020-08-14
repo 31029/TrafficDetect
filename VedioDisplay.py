@@ -1,6 +1,6 @@
 from time import ctime, sleep
 import time
-from typing import Pattern, Tuple
+from typing import Optional, Pattern, Tuple
 import cv2
 import os
 import threading
@@ -26,24 +26,52 @@ class helpdialog(QDialog):
 
 class roadchoosedialog(QDialog):
     """设置路口名"""
-    def __init__(self):
+    def __init__(self, display_object):
         QDialog.__init__(self)
         self.ui = Ui_Dialog_chooseRoad()
         self.ui.setupUi(self)
         self.ui.chooseRoad.addItem('所有路口')
         self.ui.chooseRoad.addItems(PATH.get_allroads())
         self.ui.chooseRoad.currentIndexChanged.connect(self.set_roadinfo)
-        
+        self.ui.pushButton_ok.clicked.connect(self.get_roadinfo)
+        self.display_object = display_object
+
+    show_processed_info = pyqtSignal()
+
     def set_roadinfo(self):
-        if self.ui.chooseRoad.currentText() == "所有路口":
+        """搜索对应路口文件夹的违法记录"""
+        self.ChosedRoad = self.ui.chooseRoad.currentText()
+        if self.ChosedRoad == "所有路口":
             pass
         else:
-            print("1")
-            try:
-                self.ui.choose_time.addItems(PATH.get_chosed_roadinfo(self.ui.chooseRoad.currentText()))
-            except:
+            self.ui.choose_time.clear()
+            VedioList = PATH.get_chosed_roadinfo(self.ChosedRoad)
+            if len(VedioList) == 0:
                 dig = QMessageBox.information(self, "提示", "当前路口没有处理视频！", QMessageBox.Yes)
+            else:
+                self.ui.choose_time.addItem('所有时间')
+                self.ui.choose_time.addItems(VedioList)
 
+    def get_roadinfo(self):
+        """确定路口和时间段之后的操作"""
+        if not self.display_object.stopEvent.is_set():
+            self.display_object.stopEvent.set()
+        self.display_object.Close()
+        self.ChosedTime = self.ui.choose_time.currentText()
+        if self.ChosedTime == "所有时间":
+            pass
+        else:
+            self.display_object.ui.label_road_text.setText(self.ChosedRoad)
+            try:
+                PATH.setValue('RoadName', self.ChosedRoad)
+                PATH.setValue('CVedioDate', self.ChosedTime)
+                Vedio_OutFileName = PATH.detect_result_path + self.ChosedRoad + '\\'+ self.ChosedTime+"\\Vedio_out.avi"
+                self.display_object.fileName = Vedio_OutFileName
+                self.display_object.specialroad = True
+                self.show_processed_info.emit()
+            except:
+                dig = QMessageBox.warning(self, "警告", "未找到目标视频文件", QMessageBox.Yes)
+            
 
 
 class Worker(QObject):
@@ -58,7 +86,7 @@ class Worker(QObject):
     @pyqtSlot()
     def work(self): # A slot takes no params
         print("检测开始")
-        detect(self.fileName,self.video_outname, self.light_Pos)
+        detect(self.fileName,self.video_outname)
         self.finished.emit()
         self.show_processed_vedio.emit()
         print("检测结束")
@@ -69,6 +97,8 @@ class Display:
         self.mainWnd = mainWnd
         self.ui = mainWnd.ui
         self.stop = False
+        self.specialroad = False
+        self.fileName = ''
         
         #界面所有按钮的初始化
         self.ui.Open.setEnabled(True)
@@ -100,28 +130,28 @@ class Display:
 
     def Open(self):
         """打开视频原文件按钮响应函数"""
-        self.fileName, self.fileType = QFileDialog.getOpenFileName(self.mainWnd, 'Choose file', '', '*.avi')
         self.video_outname = ''
-        
-        if self.fileName is None or '.avi' not in self.fileName:
-            return
-        if 'out' not in self.video_outname: 
-            VedioDate = time.ctime(os.path.getctime(self.fileName))
-            VedioDate = VedioDate.replace(' ', "_").replace(':', '_').replace('__', '_')
-            PATH.setValue('CVedioDate', VedioDate)
-            self.video_outname = PATH.run_a_red_light_vedio_path + PATH.get_roadname() + PATH.get_VedioDate()
+        if not self.specialroad:
+            self.fileName, self.fileType = QFileDialog.getOpenFileName(self.mainWnd, 'Choose file', '', '*.avi')
+            if self.fileName is None or '.avi' not in self.fileName:
+                return
+            if 'out' not in self.video_outname: 
+                VedioDate = time.ctime(os.path.getctime(self.fileName))
+                VedioDate = VedioDate.replace(' ', "_").replace(':', '_').replace('__', '_')
+                PATH.setValue('CVedioDate', VedioDate)
+                self.video_outname = PATH.run_a_red_light_vedio_path() + "Vedio_out.avi"
 
         # 创建视频显示线程
+        self.specialroad = False
         self.cap = cv2.VideoCapture(self.fileName)
         self.frameRate = self.cap.get(cv2.CAP_PROP_FPS)
         th = threading.Thread(target=self.Display)
         th.start()
-
-
+        
+        
     def Stop(self):
         """暂停按钮响应函数"""
         self.stop = not self.stop
-
 
     def Close(self):
         """关闭按钮响应函数"""
@@ -130,10 +160,9 @@ class Display:
         sleep(0.1)
         self.thread.quit()
 
-
     def Display(self):
         """视频展示函数"""
-        if self.mainWnd.checkstats is True:
+        if self.mainWnd.checkstat is True:
             self.stop = False
 
         self.ui.Open.setEnabled(False)
@@ -141,7 +170,7 @@ class Display:
         self.ui.Continue.setEnabled(True)
         self.ui.Api_button.setEnabled(True)
         self.ui.Button_GetPos.setEnabled(True)
-
+        
         while self.cap.isOpened():
             if not self.stop:
                 success, frame = self.cap.read()
@@ -171,7 +200,7 @@ class Display:
         """检测API接口"""
         print(self.fileName)
         print(self.video_outname)
-        PATH.cheakFolders()
+        PATH.cheackFolders()
         
         tuple_Pos = self.mainWnd.x, self.mainWnd.y
         print(tuple_Pos)
@@ -193,10 +222,14 @@ class Display:
     def show_processed_vedio(self):
         """显示detected视频以及违法信息"""
         #违章表格初始化
-        with open(PATH.run_a_red_lightpath,  encoding='UTF-8') as fp:
+        print(PATH.run_a_red_lightpath())
+        with open(PATH.run_a_red_lightpath(),  encoding='UTF-8') as fp:
             data =[]
             data = fp.readlines()
+            if '\n' in data:
+                data.remove('\n')
             row_lenth = len(data)
+
         self.model=QStandardItemModel()#存储任意结构数据
         self.model.setHorizontalHeaderLabels(['车牌号码','违章类型'])
         self.ui.tableView.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
@@ -211,7 +244,7 @@ class Display:
         # 创建视频显示线程
         self.ui.tableView.setModel(self.model)
         print("开始播放")
-        self.cap = cv2.VideoCapture(self.video_outname)
+        self.cap = cv2.VideoCapture(PATH.run_a_red_light_vedio_path() + "Vedio_out.avi")
         self.frameRate = self.cap.get(cv2.CAP_PROP_FPS)
         th1 = threading.Thread(target=self.Display)
         th1.start()
@@ -224,11 +257,11 @@ class Display:
             return
         try:
             #删除txt文件内容
-            open(PATH.run_a_red_lightpath, 'w').close()
+            open(PATH.run_a_red_lightpath(), 'w').close()
             open(PATH.resultpath, 'w').close()
 
             #删除img文件
-            img_path = [PATH.caroutputpath, PATH.run_a_red_light_img_path, PATH.trafficoutputpath]
+            img_path = [PATH.caroutputpath, PATH.run_a_red_light_img_path(), PATH.trafficoutputpath]
             for i in range(0,3):
                 os.chdir(img_path[i]) 
                 fileList = list(os.listdir()) 
@@ -278,10 +311,11 @@ class Display:
             PATH.setValue('RoadName', text)
             self.mainWnd.ui.label_road_text.setText(PATH.get_roadname())
         else:
-            self.mainWnd.ui.label_road_text.setText(PATH.get_roadname())
+            box = QMessageBox.information(self.mainWnd, "提示", "当前未设置路口", QMessageBox.Yes)
         
 
     def choose_road(self):
         """选择已经处理的视频"""
-        self.choosedig = roadchoosedialog()
+        self.choosedig = roadchoosedialog(self)
         self.choosedig.show()
+        self.choosedig.show_processed_info.connect(self.show_processed_vedio)

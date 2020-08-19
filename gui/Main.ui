@@ -67,7 +67,7 @@
      </font>
     </property>
     <property name="text">
-     <string>                                                 视频播放区域</string>
+     <string>                                                            视频播放区域</string>
     </property>
     <property name="textFormat">
      <enum>Qt::AutoText</enum>
@@ -76,16 +76,16 @@
    <widget class="QTableView" name="tableView">
     <property name="geometry">
      <rect>
-      <x>1</x>
-      <y>536</y>
-      <width>801</width>
+      <x>0</x>
+      <y>540</y>
+      <width>411</width>
       <height>291</height>
      </rect>
     </property>
     <property name="minimumSize">
      <size>
-      <width>721</width>
-      <height>281</height>
+      <width>0</width>
+      <height>0</height>
      </size>
     </property>
     <attribute name="horizontalHeaderShowSortIndicator" stdset="0">
@@ -97,7 +97,7 @@
      <rect>
       <x>810</x>
       <y>10</y>
-      <width>131</width>
+      <width>111</width>
       <height>31</height>
      </rect>
     </property>
@@ -242,11 +242,11 @@
     <property name="font">
      <font>
       <family>Agency FB</family>
-      <pointsize>10</pointsize>
+      <pointsize>11</pointsize>
      </font>
     </property>
     <property name="text">
-     <string>导入原视频文件</string>
+     <string>导入待检测视频文件</string>
     </property>
    </widget>
    <widget class="QPushButton" name="Button_imgout">
@@ -273,7 +273,7 @@
     <property name="font">
      <font>
       <family>Agency FB</family>
-      <pointsize>10</pointsize>
+      <pointsize>14</pointsize>
      </font>
     </property>
     <property name="text">
@@ -304,7 +304,7 @@
     <property name="font">
      <font>
       <family>Agency FB</family>
-      <pointsize>10</pointsize>
+      <pointsize>12</pointsize>
      </font>
     </property>
     <property name="text">
@@ -335,7 +335,7 @@
     <property name="font">
      <font>
       <family>Agency FB</family>
-      <pointsize>10</pointsize>
+      <pointsize>14</pointsize>
      </font>
     </property>
     <property name="text">
@@ -347,7 +347,7 @@
      <rect>
       <x>810</x>
       <y>50</y>
-      <width>151</width>
+      <width>81</width>
       <height>31</height>
      </rect>
     </property>
@@ -358,15 +358,15 @@
      </font>
     </property>
     <property name="text">
-     <string>红绿灯参数：</string>
+     <string>时间段：</string>
     </property>
    </widget>
-   <widget class="QLabel" name="label_ligh_text">
+   <widget class="QLabel" name="label_date_text">
     <property name="geometry">
      <rect>
-      <x>980</x>
+      <x>900</x>
       <y>50</y>
-      <width>181</width>
+      <width>251</width>
       <height>31</height>
      </rect>
     </property>
@@ -406,6 +406,25 @@
      <enum>Qt::Horizontal</enum>
     </property>
    </widget>
+   <widget class="QLabel" name="label_roadinfo">
+    <property name="geometry">
+     <rect>
+      <x>410</x>
+      <y>540</y>
+      <width>391</width>
+      <height>291</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <family>Agency FB</family>
+      <pointsize>14</pointsize>
+     </font>
+    </property>
+    <property name="text">
+     <string>                             车流量信息展示区域</string>
+    </property>
+   </widget>
   </widget>
   <widget class="QMenuBar" name="menubar">
    <property name="geometry">
@@ -413,19 +432,21 @@
      <x>0</x>
      <y>0</y>
      <width>1154</width>
-     <height>26</height>
+     <height>23</height>
     </rect>
    </property>
    <widget class="QMenu" name="menu">
+    <property name="font">
+     <font>
+      <pointsize>12</pointsize>
+     </font>
+    </property>
     <property name="title">
      <string>菜单</string>
     </property>
-    <addaction name="action_SetRoad"/>
-    <addaction name="separator"/>
-    <addaction name="actionDelet_existdata"/>
-    <addaction name="delete_cache"/>
-    <addaction name="separator"/>
     <addaction name="action_choose_road"/>
+    <addaction name="action_SetRoad"/>
+    <addaction name="delete_cache"/>
    </widget>
    <widget class="QMenu" name="menu_helper">
     <property name="title">
@@ -433,15 +454,8 @@
     </property>
     <addaction name="actionHelp"/>
    </widget>
-   <widget class="QMenu" name="menu_2">
-    <property name="title">
-     <string>自动化</string>
-    </property>
-    <addaction name="actionZidonghua"/>
-   </widget>
    <addaction name="menu"/>
    <addaction name="menu_helper"/>
-   <addaction name="menu_2"/>
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
   <action name="actionDelet_existdata">
@@ -451,7 +465,13 @@
   </action>
   <action name="delete_cache">
    <property name="text">
-    <string>只清理缓存</string>
+    <string>清理缓存</string>
+   </property>
+   <property name="font">
+    <font>
+     <family>Agency FB</family>
+     <pointsize>10</pointsize>
+    </font>
    </property>
   </action>
   <action name="actionHelp">
@@ -468,10 +488,22 @@
    <property name="text">
     <string>查看已处理视频</string>
    </property>
+   <property name="font">
+    <font>
+     <family>Agency FB</family>
+     <pointsize>10</pointsize>
+    </font>
+   </property>
   </action>
   <action name="action_SetRoad">
    <property name="text">
-    <string>设置路口</string>
+    <string>设置当前路口</string>
+   </property>
+   <property name="font">
+    <font>
+     <family>Agency FB</family>
+     <pointsize>10</pointsize>
+    </font>
    </property>
   </action>
  </widget>

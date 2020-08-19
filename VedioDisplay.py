@@ -25,7 +25,9 @@ class helpdialog(QDialog):
 
 
 class roadchoosedialog(QDialog):
-    """设置路口名"""
+    """选择已处理视频对话框"""
+
+    show_processed_info = pyqtSignal()
     def __init__(self, display_object):
         QDialog.__init__(self)
         self.ui = Ui_Dialog_chooseRoad()
@@ -35,8 +37,6 @@ class roadchoosedialog(QDialog):
         self.ui.chooseRoad.currentIndexChanged.connect(self.set_roadinfo)
         self.ui.pushButton_ok.clicked.connect(self.get_roadinfo)
         self.display_object = display_object
-
-    show_processed_info = pyqtSignal()
 
     def set_roadinfo(self):
         """搜索对应路口文件夹的违法记录"""
@@ -58,10 +58,14 @@ class roadchoosedialog(QDialog):
             self.display_object.stopEvent.set()
         self.display_object.Close()
         self.ChosedTime = self.ui.choose_time.currentText()
-        if self.ChosedTime == "所有时间":
-            pass
+        self.display_object.ui.label_road_text.setText(self.ChosedRoad)
+
+        if self.ChosedTime == "所有时间" and self.ChosedRoad != "所有路口":
+            PATH.setValue('RoadName', self.ChosedRoad)
+            PATH.setValue('CVedioDate', self.ChosedTime)
+            PATH.bool_alltimes = True
         else:
-            self.display_object.ui.label_road_text.setText(self.ChosedRoad)
+            PATH.bool_alltimes = False
             try:
                 PATH.setValue('RoadName', self.ChosedRoad)
                 PATH.setValue('CVedioDate', self.ChosedTime)
@@ -71,7 +75,7 @@ class roadchoosedialog(QDialog):
                 self.show_processed_info.emit()
             except:
                 dig = QMessageBox.warning(self, "警告", "未找到目标视频文件", QMessageBox.Yes)
-            
+        self.display_object.ui.label_date_text.setText(self.ChosedTime)
 
 
 class Worker(QObject):
@@ -114,7 +118,6 @@ class Display:
         self.ui.Api_button.clicked.connect(self.Api_button)
 
         #菜单栏设置
-        self.ui.actionDelet_existdata.triggered.connect(self.Delet_exist_data)
         self.ui.delete_cache.triggered.connect(self.Delet_cache_data)
         self.ui.actionHelp.triggered.connect(self.helpdig)
         self.ui.action_SetRoad.triggered.connect(self.set_road)
@@ -230,6 +233,8 @@ class Display:
                 data.remove('\n')
             row_lenth = len(data)
 
+        self.ui.label_roadinfo.setPixmap(QPixmap(PATH.infomation_path()))
+        self.ui.label_roadinfo.setScaledContents(True)
         self.model=QStandardItemModel()#存储任意结构数据
         self.model.setHorizontalHeaderLabels(['车牌号码','违章类型'])
         self.ui.tableView.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
@@ -250,42 +255,17 @@ class Display:
         th1.start()
 
 
-    def Delet_exist_data(self):
-        """删除所有现存的detect_result数据以便重新开始"""
-        res1 = QMessageBox.warning(self.mainWnd, "警告", "请确保已保存好了必要的信息，确定继续吗？", QMessageBox.Yes | QMessageBox.No)
-        if (QMessageBox.No == res1):
-            return
-        try:
-            #删除txt文件内容
-            open(PATH.run_a_red_lightpath(), 'w').close()
-            open(PATH.resultpath, 'w').close()
-
-            #删除img文件
-            img_path = [PATH.caroutputpath, PATH.run_a_red_light_img_path(), PATH.trafficoutputpath]
-            for i in range(0,3):
-                os.chdir(img_path[i]) 
-                fileList = list(os.listdir()) 
-                for file in fileList: 
-                    os.remove(file) 
-        
-        except PermissionError:
-            res2 = QMessageBox.information(self.mainWnd, "提示", "您正在使用该文件，请关闭后再执行", QMessageBox.Yes)
-            return
-
-        print("delete successfully")
-        res2 = QMessageBox.information(self.mainWnd, "提示", "删除数据成功！", QMessageBox.Yes)
-    
-
     def Delet_cache_data(self):
-        """只删除缓存数据"""
+        """删除缓存数据"""
         res1 = QMessageBox.warning(self.mainWnd, "警告", "请确保已保存好了必要的信息，确定继续吗？", QMessageBox.Yes | QMessageBox.No)
         if (QMessageBox.No == res1):
             return
         try:
-            #删除img文件
-            img_path = [PATH.caroutputpath, PATH.trafficoutputpath]
-            for i in range(0,2):
-                os.chdir(img_path[i]) 
+            with open(PATH.resultpath, "w", encoding='UTF-8') as fp:
+                pass
+            img_path = [PATH.caroutputpath, PATH.caridpath, PATH.trafficoutputpath]
+            for i in range(0,3):
+                os.chdir(img_path[i])
                 fileList = list(os.listdir()) 
                 for file in fileList: 
                     os.remove(file) 
@@ -294,7 +274,7 @@ class Display:
             return
 
         print("delete successfully")
-        res2 = QMessageBox.information(self.mainWnd, "提示", "删除img缓存成功！", QMessageBox.Yes)
+        res2 = QMessageBox.information(self.mainWnd, "提示", "删除缓存成功！", QMessageBox.Yes)
 
 
     def helpdig(self):
@@ -305,6 +285,8 @@ class Display:
 
     def set_road(self):
         """路口名称设置"""
+        PATH.bool_alltimes = False
+        PATH.bool_allroads = False
         text, okPressed = QInputDialog.getText(self.mainWnd, "提示","输入当前路口：", QLineEdit.Normal, "")
         if okPressed and text != '':
             print("当前检测路口为:" + text)

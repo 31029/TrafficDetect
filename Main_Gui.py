@@ -40,19 +40,26 @@ class mywindow(QtWidgets.QMainWindow):
         self.ui.DisplayLabel.setMouseTracking(True)
         self.ui.Button_GetPos.clicked.connect(self.Get_Pos)
         self.checkstat = False
+        
     
     def mousePressEvent(self, event):
         if self.checkstat is True:
-            self.x=event.x()
-            self.y=event.y()
-            text = "x: {0},y: {1}".format(self.x,self.y)
-            self.checkstat = False
-            dig = QMessageBox.information(self, "提示", "直行红绿灯标参数获取成功！", QMessageBox.Yes)
-            self.ui.label_ligh_text.setText(text)
+            pos=event.x(),event.y()
+            self.pos_list.append(pos)
+            print(self.pos_list)
+            if (len(self.pos_list)==1):
+                dig = QMessageBox.information(self, "提示", "直行红绿灯坐标参数获取成功！", QMessageBox.Yes)
+            elif (len(self.pos_list)==2):
+                dig = QMessageBox.information(self, "提示", "停车线纵坐标参数获取成功！", QMessageBox.Yes)
+            else:
+                dig = QMessageBox.warning(self, "警告", "获取坐标参数过多！", QMessageBox.Yes)
+                self.pos_list.pop()
+
 
     def Get_Pos(self):
+        self.pos_list=[]
         self.checkstat = True
-        dig = QMessageBox.information(self, "提示", "请点击视频中的直行红绿灯标！", QMessageBox.Yes)
+        dig = QMessageBox.information(self, "提示", "1.请点击视频中的直行红绿灯坐标!"+"\n\n"+"2.请点击视频中的停车线坐标！", QMessageBox.Yes)
 
 
 # QApplication相当于main函数，也就是整个程序（很多文件）的主入口函数。
@@ -72,7 +79,8 @@ if __name__ == "__main__":
     display = Display(mainWnd)
     infoout = InfoOut(InfooutWindow)
     imgout = imgOut(illegalDialog)
-    
+
     mainWnd.show()#有了实例，就得让它显示，show()是QWidget的方法，用于显示窗口。
+
     sys.exit(app.exec_())
 

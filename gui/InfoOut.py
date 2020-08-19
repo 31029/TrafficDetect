@@ -20,13 +20,17 @@ class InfoOut:
     def out(self):  
         choic_item = self.ui.comboBox.currentText()
         dirpath = ''
-        try:
-            time = PATH.getValue('VedioDate')
-            timelist = time.split('_')
-            VedioDate = timelist[5]+'_'+timelist[1]+'_'+timelist[3]
-        except:
+        if PATH.bool_alltimes == True:                      #若为所有时间
             crutime = gmtime()
-            VedioDate = str(crutime.tm_year) + "_" + str(crutime.tm_mon) + "_" + str(crutime.tm_mday)
+            VedioDate = str(crutime.tm_year) + "所有时间"
+        else:                                               #若为特定时间段
+            try:
+                time = PATH.getValue('VedioDate')
+                timelist = time.split('_')
+                VedioDate = timelist[5]+'_'+timelist[1]+'_'+timelist[3]
+            except:
+                crutime = gmtime()
+                VedioDate = str(crutime.tm_year) + "_" + str(crutime.tm_mon) + "_" + str(crutime.tm_mday)
            
 
         with open(PATH.run_a_red_lightpath(), 'r', encoding='UTF-8') as fp:
@@ -42,7 +46,7 @@ class InfoOut:
                 data_dict[plate_number] = ilegal_type
 
         if choic_item == 'Excel文件':
-            dirpath = QFileDialog.getSaveFileName(self.wnd, '选择保存路径', PATH.DeskTop_path + '违法记录_'+ VedioDate + '.xlsx', 'xlsx(*.xlsx)')
+            dirpath = QFileDialog.getSaveFileName(self.wnd, '选择保存路径', PATH.DeskTop_path + PATH.get_roadname() + "_" + VedioDate + '.xlsx', 'xlsx(*.xlsx)')
 
             if dirpath[0] != '':
                 row, col = 1, 0
@@ -60,9 +64,9 @@ class InfoOut:
                 return
             #退出窗口
             self.ui.Quit.click()
-      
+
         elif choic_item == 'Txt文件':   
-            dirpath = QFileDialog.getSaveFileName(self.wnd, '选择保存路径', PATH.DeskTop_path + '违法记录_' + VedioDate + '.txt', 'Text Files(*.txt)')
+            dirpath = QFileDialog.getSaveFileName(self.wnd, '选择保存路径', PATH.DeskTop_path + PATH.get_roadname() + "_" + VedioDate + '.txt', 'Text Files(*.txt)')
             if dirpath[0] != '':
                 with open(dirpath[0], 'w', newline='', encoding='UTF-8') as txt_file:
                     title = ['车牌号码 ', '违法类型\n']

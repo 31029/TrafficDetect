@@ -37,7 +37,7 @@ class SetRoad_dialog(QDialog):
         self.ui.pushButton_ok.clicked.connect(self.set_road)
     
     def set_road(self):
-        if self.ui.Text_NewRoad.toPlainText() is None and self.ui.Box_Existed_Roads.currentIndex() is not -1:
+        if self.ui.Text_NewRoad.toPlainText() is '' and self.ui.Box_Existed_Roads.currentIndex() is not -1:
             PATH.setValue('RoadName', self.ui.Box_Existed_Roads.currentText())
             self.mainWnd.ui.label_road_text.setText(self.ui.Box_Existed_Roads.currentText())
         elif self.ui.Text_NewRoad.toPlainText() is not '':
@@ -45,6 +45,9 @@ class SetRoad_dialog(QDialog):
             self.mainWnd.ui.label_road_text.setText(self.ui.Text_NewRoad.toPlainText())
         else:
             dig = QMessageBox.warning(self, "警告", "当前未设置路口！", QMessageBox.Yes)
+            return
+        dig = QMessageBox.information(self, "提示", "路口设置成功", QMessageBox.Yes)
+        
 
 
 class roadchoosedialog(QDialog):
@@ -54,16 +57,16 @@ class roadchoosedialog(QDialog):
         QDialog.__init__(self)
         self.ui = Ui_Dialog_chooseRoad()
         self.ui.setupUi(self)
-        self.ui.chooseRoad.addItem('所有路口')
         self.ui.chooseRoad.addItems(PATH.get_allroads())
         self.ui.chooseRoad.currentIndexChanged.connect(self.set_roadinfo)
         self.ui.pushButton_ok.clicked.connect(self.get_roadinfo)
         self.mainWnd = mainWnd
+        self.ui.chooseRoad.setCurrentIndex(-1)
 
     def set_roadinfo(self):
         """搜索对应路口文件夹的违法记录"""
         self.ChosedRoad = self.ui.chooseRoad.currentText()
-        if self.ChosedRoad == "所有路口":
+        if self.ui.chooseRoad.currentIndex() == -1:
             pass
         else:
             self.ui.choose_time.clear()
@@ -76,9 +79,9 @@ class roadchoosedialog(QDialog):
 
     def get_roadinfo(self):
         """确定路口和时间段之后的操作"""
-        if not self.mainWnd.stopEvent.is_set():
-            self.mainWnd.stopEvent.set()
-        self.mainWnd.Close()
+        if self.ui.chooseRoad.currentIndex() == -1:
+            dig = QMessageBox.information(self, "提示", "未选择路口", QMessageBox.Yes)
+            return
         self.ChosedTime = self.ui.choose_time.currentText()
         self.mainWnd.ui.label_road_text.setText(self.ChosedRoad)
 
@@ -99,7 +102,6 @@ class roadchoosedialog(QDialog):
                 dig = QMessageBox.warning(self, "警告", "未找到目标视频文件", QMessageBox.Yes)
         self.mainWnd.ui.label_date_text.setText(self.ChosedTime)
         
-
 
 class Worker(QObject):
     def __init__(self, in_name, out_name):
@@ -169,9 +171,6 @@ class Display:
                 self.video_outname = PATH.run_a_red_light_vedio_path() + "Vedio_out.avi"
 
         # 创建视频显示线程
-        self.specialroad = False
-        self.cap = cv2.VideoCapture(self.fileName)
-        self.frameRate = self.cap.get(cv2.CAP_PROP_FPS)
         th = threading.Thread(target=self.Display)
         th.start()
         
@@ -189,6 +188,10 @@ class Display:
 
     def Display(self):
         """视频展示函数"""
+        self.specialroad = False
+        self.cap = cv2.VideoCapture(self.fileName)
+        self.frameRate = self.cap.get(cv2.CAP_PROP_FPS)
+
         if self.mainWnd.checkstat is True:
             self.stop = False
 
@@ -225,25 +228,28 @@ class Display:
 
     def Api_button(self):
         """检测API接口"""
-        print(self.fileName)
-        print(self.video_outname)
-        PATH.cheackFolders()
-        
-        tuple_Pos = self.mainWnd.x, self.mainWnd.y
-        print(tuple_Pos)
-        print(tuple_Pos[0])
-        self.worker = Worker(self.fileName, self.video_outname)
-        self.worker.finished.connect(self.thread.quit)
-        self.thread.started.connect(self.worker.work)
-        self.worker.show_processed_vedio.connect(self.show_processed_vedio)
+        try:
+            print(self.fileName)
+            print(self.video_outname)
+            PATH.cheackFolders()
+            
+            tuple_Pos = self.mainWnd.x, self.mainWnd.y
+            print(tuple_Pos)
+            print(tuple_Pos[0])
+            self.worker = Worker(self.fileName, self.video_outname)
+            self.worker.finished.connect(self.thread.quit)
+            self.thread.started.connect(self.worker.work)
+            self.worker.show_processed_vedio.connect(self.show_processed_vedio)
 
-        self.stopEvent.set()
-        print("正在关原视频")
-        sleep(1)
-        self.ui.DisplayLabel.setText( " "*30 +"正在检测视频，请勿退出系统")
-        print("Qthread开始")
-        self.worker.moveToThread(self.thread)
-        self.thread.start()
+            self.stopEvent.set()
+            print("正在关原视频")
+            sleep(1)
+            self.ui.DisplayLabel.setText( " "*30 +"正在检测视频，请勿退出系统")
+            print("Qthread开始")
+            self.worker.moveToThread(self.thread)
+            self.thread.start()
+        except:
+            dig = QMessageBox.warning(self, "警告", "错误操作！可选择再次打开程序", QMessageBox.Yes)
 
 
     def show_processed_vedio(self):
@@ -268,14 +274,11 @@ class Display:
             j = QStandardItem(ilegal_type)
             self.model.setItem(row,0,i)
             self.model.setItem(row,1,j)
+        self.ui.tableView.setModel(self.model)
 
         # 创建视频显示线程
-        self.ui.tableView.setModel(self.model)
-        print("开始播放")
-        self.cap = cv2.VideoCapture(PATH.run_a_red_light_vedio_path())
-        self.frameRate = self.cap.get(cv2.CAP_PROP_FPS)
-        th1 = threading.Thread(target=self.Display)
-        th1.start()
+        self.th1 = threading.Thread(target=self.Display)
+        self.th1.start()
 
 
     def Delet_cache_data(self):

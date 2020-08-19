@@ -445,8 +445,11 @@
      <string>菜单</string>
     </property>
     <addaction name="action_SetRoad"/>
+    <addaction name="separator"/>
     <addaction name="action_choose_road"/>
+    <addaction name="separator"/>
     <addaction name="delete_cache"/>
+    <addaction name="separator"/>
    </widget>
    <widget class="QMenu" name="menu_helper">
     <property name="title">

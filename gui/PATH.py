@@ -21,7 +21,7 @@ _global_dict['default_road'] = "测试路口"
 _global_dict['default_date'] = datetime.datetime.now().strftime('%Y-%m-%d')
 
 #通用路径设置
-ProjectPath = os.path.dirname(os.path.dirname(os.path.dirname(__file__)))
+ProjectPath = os.path.dirname(os.path.dirname(os.path.dirname(__file__))) + "\\"
 DeskTop_path = os.path.join(os.path.expanduser("~"), 'Desktop') + '\\'
 Gui_path = ProjectPath + "mytraffic_cv\\Main_Gui.py"
 
@@ -79,7 +79,7 @@ def Road_ROOTpath():
     return detect_result_path + get_roadname() + "\\"
     
 def Road_illegal_Info():
-    return  Road_ROOTpath() + get_VedioDate()
+    return  Road_ROOTpath() + get_VedioDate() + "\\"
 
 def run_a_red_light_vedio_path():
     a = Road_illegal_Info() + "Vedio_out.avi"
@@ -87,15 +87,15 @@ def run_a_red_light_vedio_path():
 
 def run_a_red_light_img_path():
     a = Road_illegal_Info() 
-    return a + "\\illegal_imgs\\"
+    return a + "illegal_imgs\\"
 
 def run_a_red_lightpath():
     a = Road_illegal_Info()
-    return a + "\\illegal_car_info.txt"
+    return a + "illegal_car_info.txt"
 
 def infomation_path():
     a = Road_illegal_Info()
-    return a + "\\infomation.png"
+    return a + "infomation.png"
 
 
 ##复杂操作

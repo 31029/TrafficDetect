@@ -17,7 +17,7 @@ global bool_allroads
 bool_allroads = False
 bool_alltimes = False
 _global_dict = {}
-_global_dict['default_road'] = "测试路口"
+_global_dict['default_road'] = "系统默认路口"
 _global_dict['default_date'] = datetime.datetime.now().strftime('%Y-%m-%d')
 
 #通用路径设置
@@ -26,13 +26,13 @@ DeskTop_path = os.path.join(os.path.expanduser("~"), 'Desktop') + '\\'
 Gui_path = ProjectPath + "mytraffic_cv\\Main_Gui.py"
 
 #结果存放路径
-detect_result_path = ProjectPath + "mytraffic_cv\\detect_result\\"
+detect_result_path = ProjectPath + "detect_result\\"
 trafficoutputpath  =  detect_result_path + "cache\\traffic\\"
 caroutputpath  =  detect_result_path + "cache\\car\\"
 resultpath = detect_result_path + "cache\\result.txt"
+caridpath=ProjectPath + detect_result_path + "cache\\carid\\"
 
 model_ocr_plate_all_w_rnn_2 = ProjectPath + "mytraffic_cv\\model\\ocr_plate_all_w_rnn_2.h5"
-caridpath=ProjectPath + "mytraffic_cv\\detect_result\\cache\\carid\\"
 
 #模型绝对路径
 model_cascade = ProjectPath + "mytraffic_cv\\model\\cascade.xml"
@@ -68,7 +68,7 @@ def get_VedioDate() -> str:
         return _global_dict['default_date']
 
 #文件夹操作API
-for root, subdirs, files in os.walk(ProjectPath + "mytraffic_cv\\detect_result"):
+for root, subdirs, files in os.walk(detect_result_path):
     _global_dict['all_roads'] = subdirs
     _global_dict['all_roads'].remove('cache')
     break
@@ -108,7 +108,7 @@ def get_allroads() -> List:
         
 def get_chosed_roadinfo(Roadname:str) -> List:
     """获取当前检测路口的所有时间段的名称，用于addItems"""
-    for root, subdirs, files in os.walk(ProjectPath + "mytraffic_cv\\detect_result\\" + Roadname):
+    for root, subdirs, files in os.walk(detect_result_path + Roadname):
         _global_dict['chosed_roadinfo'] = subdirs
         return subdirs
 
@@ -136,7 +136,7 @@ def get_allroads_imgs_paths() -> List:
 
 def cheackFolders():
     """创建变化文件夹函数"""
-    Road_ROOTpath = ProjectPath + "mytraffic_cv\\detect_result\\" + get_roadname() + "\\"
+    Road_ROOTpath = ProjectPath + detect_result_path + get_roadname() + "\\"
     Road_illegal_Info = Road_ROOTpath + get_VedioDate()
     Road_Paths = [Road_ROOTpath, Road_illegal_Info,run_a_red_light_vedio_path(), run_a_red_light_img_path()]
     for _ in Road_Paths:

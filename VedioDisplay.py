@@ -6,7 +6,7 @@ import os
 import threading
 
 from PyQt5.QtCore import QThread, QObject, pyqtSignal, pyqtSlot
-from PyQt5.QtWidgets import QFileDialog, QMessageBox, QHeaderView, QDialog, QInputDialog, QLineEdit
+from PyQt5.QtWidgets import QFileDialog, QMessageBox, QHeaderView, QDialog
 from PyQt5.QtGui import QImage, QPixmap
 from PyQt5.QtGui import  QStandardItemModel,QStandardItem
 
@@ -37,6 +37,10 @@ class SetRoad_dialog(QDialog):
         self.ui.pushButton_ok.clicked.connect(self.set_road)
     
     def set_road(self):
+        """路口设置对话框响应函数"""
+        self.ui.Open.setEnabled(True)
+        self.ui.Button_imgout.setEnabled(True)
+        self.ui.Button_infoout.setEnabled(True)
         if self.ui.Text_NewRoad.toPlainText() is '' and self.ui.Box_Existed_Roads.currentIndex() is not -1:
             PATH.setValue('RoadName', self.ui.Box_Existed_Roads.currentText())
             self.mainWnd.ui.label_road_text.setText(self.ui.Box_Existed_Roads.currentText())
@@ -47,7 +51,9 @@ class SetRoad_dialog(QDialog):
             dig = QMessageBox.warning(self, "警告", "当前未设置路口！", QMessageBox.Yes)
             return
         dig = QMessageBox.information(self, "提示", "路口设置成功", QMessageBox.Yes)
-        
+        self.ui.Open.setEnabled(True)
+        self.ui.Button_imgout.setEnabled(True)
+        self.ui.Button_infoout.setEnabled(True)
 
 
 class roadchoosedialog(QDialog):
@@ -101,6 +107,9 @@ class roadchoosedialog(QDialog):
             except:
                 dig = QMessageBox.warning(self, "警告", "未找到目标视频文件", QMessageBox.Yes)
         self.mainWnd.ui.label_date_text.setText(self.ChosedTime)
+        self.mainWnd.ui.Open.setEnabled(True)
+        self.mainWnd.ui.Button_imgout.setEnabled(True)
+        self.mainWnd.ui.Button_infoout.setEnabled(True)
         
 
 class Worker(QObject):
@@ -168,6 +177,7 @@ class Display:
                 VedioDate = time.ctime(os.path.getctime(self.fileName))
                 VedioDate = VedioDate.replace(' ', "_").replace(':', '_').replace('__', '_')
                 PATH.setValue('CVedioDate', VedioDate)
+                self.mainWnd.label_date_text.setText(PATH.get_VedioDate)
                 self.video_outname = PATH.run_a_red_light_vedio_path() + "Vedio_out.avi"
 
         # 创建视频显示线程
@@ -261,7 +271,6 @@ class Display:
             if '\n' in data:
                 data.remove('\n')
             row_lenth = len(data)
-
         self.ui.label_roadinfo.setPixmap(QPixmap(PATH.infomation_path()))
         self.ui.label_roadinfo.setScaledContents(True)
         self.model=QStandardItemModel()#存储任意结构数据

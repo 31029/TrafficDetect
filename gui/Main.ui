@@ -105,6 +105,8 @@
      <font>
       <family>仿宋</family>
       <pointsize>16</pointsize>
+      <weight>75</weight>
+      <bold>true</bold>
      </font>
     </property>
     <property name="text">
@@ -123,11 +125,11 @@
     <property name="font">
      <font>
       <family>仿宋</family>
-      <pointsize>12</pointsize>
+      <pointsize>14</pointsize>
      </font>
     </property>
     <property name="text">
-     <string/>
+     <string>请先设置路口名称！</string>
     </property>
    </widget>
    <widget class="Line" name="line">
@@ -355,6 +357,8 @@
      <font>
       <family>仿宋</family>
       <pointsize>16</pointsize>
+      <weight>75</weight>
+      <bold>true</bold>
      </font>
     </property>
     <property name="text">

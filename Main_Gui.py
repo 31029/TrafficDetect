@@ -40,8 +40,11 @@ class mywindow(QtWidgets.QMainWindow):
         self.ui.DisplayLabel.setMouseTracking(True)
         self.ui.Button_GetPos.clicked.connect(self.Get_Pos)
         self.checkstat = False
-        
-    
+        #初始化按钮
+        self.ui.Open.setEnabled(False)
+        self.ui.Button_imgout.setEnabled(False)
+        self.ui.Button_infoout.setEnabled(False)
+
     def mousePressEvent(self, event):
         if self.checkstat is True:
             pos=event.x(),event.y()

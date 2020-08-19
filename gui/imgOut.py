@@ -1,7 +1,59 @@
 import sys, os 
-import gui.PATH as PATH
 from PyQt5.QtGui import QPixmap
-from PyQt5.QtWidgets import QMessageBox
+from PyQt5.QtWidgets import QMessageBox,QDialog
+
+import gui.PATH as PATH
+from gui.Ui_ChangeInfo import Ui_Dialog_ChangeInfo
+
+
+class ChangeInfo_Dialog(QDialog):
+    def __init__(self, DisplayObject):
+        QDialog.__init__(self)
+        self.ui = Ui_Dialog_ChangeInfo()
+        self.ui.setupUi(self)
+        self.DisplayObject = DisplayObject
+        self.ui.pushButton_ok.clicked.connect(self.Change)
+
+    def Change(self):
+        """纠正信息按钮响应函数"""
+        try:
+            img_dirpath = self.DisplayObject.current_img_dirpath
+            self.ChangePlate = self.DisplayObject.ui.plate_number.text()
+            self.ChangeType = self.DisplayObject.ui.illegal_type.text()
+            oldnumber = self.ChangePlate
+            oldtype = self.ChangeType
+            oldname = img_dirpath + self.ChangePlate +'_'+  self.ChangeType + ".jpg"
+            print(oldname)
+
+            #更新img文件
+            if self.ui.textEdit_ChangePlate.toPlainText() is not '':
+                newnumber = self.ui.textEdit_ChangePlate.toPlainText()
+            elif self.ui.textEdit_ChangeType.toPlainText() is not '':
+                self.ChangeType = self.ui.textEdit_ChangeType.toPlainText()
+            newnumber = self.ChangePlate
+            newtype = self.ChangeType
+
+            newname = img_dirpath + self.ChangePlate +'_'+  self.ChangeType + ".jpg"
+            print(newname)
+            os.rename(oldname, newname)
+
+            #更新txt文件
+            txtpath = os.path.dirname(os.path.dirname(img_dirpath))+ '\\illegal_car_info.txt'
+            with open(txtpath, 'r', encoding='UTF-8') as fp:
+                lines = fp.readlines()
+                for i in range(len(lines)):
+                    if oldnumber and oldtype in lines[i]:
+                        lines[i] = newnumber +" "+ newtype + "\n"
+                fp.close()
+            with open(txtpath, 'w', encoding='UTF-8') as fp:
+                fp.writelines(lines)
+            self.DisplayObject.img_init()
+            self.DisplayObject.next_img()
+            box = QMessageBox.warning(self, "提示", "修改成功！", QMessageBox.Yes)
+        except:
+            box = QMessageBox.warning(self, "提示", "修改失败", QMessageBox.Yes)
+
+
 
 class imgOut:
     def __init__(self, wnd):
@@ -11,11 +63,12 @@ class imgOut:
         self.imgnames_list = []
         self.ui.before.setEnabled(False)
         self.ui.delete_info.setEnabled(False)
+        self.ui.ChangeButton.setEnabled(False)
 
         self.ui.before.clicked.connect(self.before_img)
         self.ui.next.clicked.connect(self.next_img)
         self.ui.delete_info.clicked.connect(self.delet_info)
-
+        self.ui.ChangeButton.clicked.connect(self.change_info)
 
     def img_init(self):
         """初始化img列表"""
@@ -33,6 +86,7 @@ class imgOut:
             self.display_info()
             self.ui.before.setEnabled(True)
             self.ui.delete_info.setEnabled(True)
+            self.ui.ChangeButton.setEnabled(True)
         else:
             box = QMessageBox.warning(self.wnd, "提示", "库存为空", QMessageBox.Yes)
 
@@ -53,11 +107,36 @@ class imgOut:
         else:
             self.ui.before.setEnabled(True)
             self.ui.delete_info.setEnabled(True)
+            self.ui.ChangeButton.setEnabled(True)
             if self.current_img_index == len(self.imgnames_list)-1:
                 self.current_img_index = 0
             else:
                 self.current_img_index = self.current_img_index + 1
             self.display_info()
+
+
+    def display_info(self):
+        """展示违法信息"""
+        try:
+            n, m = self.imgnames_list[self.current_img_index].split('_')
+            m = str(m).replace('.jpg', '')
+            self.ui.plate_number.setText(n)
+            self.ui.illegal_type.setText(m)
+            if PATH.bool_alltimes is True:
+                Date = os.path.dirname(self.imgpaths[self.current_img_index])
+                RoadName = os.path.dirname(os.path.dirname(self.imgpaths[self.current_img_index]))
+                self.current_img_dirpath = PATH.detect_result_path + RoadName + "\\" + Date +  "\\illegal_imgs\\"
+                self.ui.label_Road_Belong.setText(RoadName)
+                self.ui.label_Time_Belong.setText(Date)
+                self.ui.label.setPixmap(QPixmap(self.imgpaths[self.current_img_index]))
+            else:
+                self.current_img_dirpath = PATH.run_a_red_light_img_path()
+                self.ui.label_Road_Belong.setText(PATH.get_roadname())
+                self.ui.label_Time_Belong.setText(PATH.get_VedioDate())
+                self.ui.label.setPixmap(QPixmap(PATH.run_a_red_light_img_path() + self.imgnames_list[self.current_img_index]))
+            self.ui.label.setScaledContents(True)
+        except:
+            box = QMessageBox.warning(self.wnd, "提示", "库存为空", QMessageBox.Yes)
 
 
     def delet_info(self):
@@ -91,18 +170,7 @@ class imgOut:
             self.current_img_index = 0
             self.display_info()
 
-
-    def display_info(self):
-        """展示违法信息"""
-        try:
-            n, m = self.imgnames_list[self.current_img_index].split('_')
-            m = str(m).replace('.jpg', '')
-            self.ui.plate_number.setText(n)
-            self.ui.illegal_type.setText(m)
-            if PATH.bool_alltimes is True:
-                self.ui.label.setPixmap(QPixmap(self.imgpaths[self.current_img_index]))
-            else:
-                self.ui.label.setPixmap(QPixmap(PATH.run_a_red_light_img_path() + self.imgnames_list[self.current_img_index]))
-            self.ui.label.setScaledContents(True)
-        except:
-            box = QMessageBox.warning(self.wnd, "提示", "库存为空", QMessageBox.Yes)
+        
+    def change_info(self):
+        self.ChangeInfo = ChangeInfo_Dialog(self)
+        self.ChangeInfo.show()

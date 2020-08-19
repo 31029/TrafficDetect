@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file 'f:\mytraffic_cv\gui\Main.ui'
+# Form implementation generated from reading ui file 'f:\YoloProject\mytraffic_cv\gui\Main.ui'
 #
 # Created by: PyQt5 UI code generator 5.6
 #
@@ -41,15 +41,16 @@ class Ui_MainWindow(object):
         font = QtGui.QFont()
         font.setFamily("仿宋")
         font.setPointSize(16)
+        font.setBold(True)
+        font.setWeight(75)
         self.label_road.setFont(font)
         self.label_road.setObjectName("label_road")
         self.label_road_text = QtWidgets.QLabel(self.centralwidget)
         self.label_road_text.setGeometry(QtCore.QRect(940, 10, 181, 31))
         font = QtGui.QFont()
         font.setFamily("仿宋")
-        font.setPointSize(12)
+        font.setPointSize(14)
         self.label_road_text.setFont(font)
-        self.label_road_text.setText("")
         self.label_road_text.setObjectName("label_road_text")
         self.line = QtWidgets.QFrame(self.centralwidget)
         self.line.setGeometry(QtCore.QRect(0, -25, 1171, 31))
@@ -125,6 +126,8 @@ class Ui_MainWindow(object):
         font = QtGui.QFont()
         font.setFamily("仿宋")
         font.setPointSize(16)
+        font.setBold(True)
+        font.setWeight(75)
         self.label_light.setFont(font)
         self.label_light.setObjectName("label_light")
         self.label_date_text = QtWidgets.QLabel(self.centralwidget)
@@ -210,6 +213,7 @@ class Ui_MainWindow(object):
         MainWindow.setWindowTitle(_translate("MainWindow", "道路违法检测系统"))
         self.DisplayLabel.setText(_translate("MainWindow", "                                                            视频播放区域"))
         self.label_road.setText(_translate("MainWindow", "监控路口："))
+        self.label_road_text.setText(_translate("MainWindow", "请先设置路口名称！"))
         self.Button_GetPos.setText(_translate("MainWindow", "参数配置"))
         self.Continue.setText(_translate("MainWindow", "暂停/继续"))
         self.Close.setText(_translate("MainWindow", "关闭"))

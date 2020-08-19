@@ -82,7 +82,7 @@ def Road_illegal_Info():
     return  Road_ROOTpath() + get_VedioDate()
 
 def run_a_red_light_vedio_path():
-    a = Road_illegal_Info()
+    a = Road_illegal_Info() + "Vedio_out.avi"
     return a
 
 def run_a_red_light_img_path():

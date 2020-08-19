@@ -444,8 +444,8 @@
     <property name="title">
      <string>菜单</string>
     </property>
-    <addaction name="action_choose_road"/>
     <addaction name="action_SetRoad"/>
+    <addaction name="action_choose_road"/>
     <addaction name="delete_cache"/>
    </widget>
    <widget class="QMenu" name="menu_helper">

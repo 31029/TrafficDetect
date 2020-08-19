@@ -14,6 +14,7 @@ import gui.PATH as PATH
 from myvideo import detect
 from gui.Ui_help import Ui_Dialog
 from gui.Ui_RoadChoose import Ui_Dialog_chooseRoad
+from gui.Ui_SetRoad import Ui_SetRoad_dialog
 
 
 class helpdialog(QDialog):
@@ -24,11 +25,32 @@ class helpdialog(QDialog):
         self.ui.setupUi(self)
 
 
+class SetRoad_dialog(QDialog):
+    """帮助手册子菜单实现类"""
+    def __init__(self, mainWnd):
+        QDialog.__init__(self)
+        self.ui = Ui_SetRoad_dialog()
+        self.ui.setupUi(self)
+        self.mainWnd = mainWnd
+        self.ui.Box_Existed_Roads.addItems(PATH.get_allroads())
+        self.ui.Box_Existed_Roads.setCurrentIndex(-1)
+        self.ui.pushButton_ok.clicked.connect(self.set_road)
+    
+    def set_road(self):
+        if self.ui.Text_NewRoad.toPlainText() is None and self.ui.Box_Existed_Roads.currentIndex() is not -1:
+            PATH.setValue('RoadName', self.ui.Box_Existed_Roads.currentText())
+            self.mainWnd.ui.label_road_text.setText(self.ui.Box_Existed_Roads.currentText())
+        elif self.ui.Text_NewRoad.toPlainText() is not '':
+            PATH.setValue('RoadName', self.ui.Text_NewRoad.toPlainText())
+            self.mainWnd.ui.label_road_text.setText(self.ui.Text_NewRoad.toPlainText())
+        else:
+            dig = QMessageBox.warning(self, "警告", "当前未设置路口！", QMessageBox.Yes)
+
+
 class roadchoosedialog(QDialog):
     """选择已处理视频对话框"""
-
     show_processed_info = pyqtSignal()
-    def __init__(self, display_object):
+    def __init__(self, mainWnd):
         QDialog.__init__(self)
         self.ui = Ui_Dialog_chooseRoad()
         self.ui.setupUi(self)
@@ -36,7 +58,7 @@ class roadchoosedialog(QDialog):
         self.ui.chooseRoad.addItems(PATH.get_allroads())
         self.ui.chooseRoad.currentIndexChanged.connect(self.set_roadinfo)
         self.ui.pushButton_ok.clicked.connect(self.get_roadinfo)
-        self.display_object = display_object
+        self.mainWnd = mainWnd
 
     def set_roadinfo(self):
         """搜索对应路口文件夹的违法记录"""
@@ -54,11 +76,11 @@ class roadchoosedialog(QDialog):
 
     def get_roadinfo(self):
         """确定路口和时间段之后的操作"""
-        if not self.display_object.stopEvent.is_set():
-            self.display_object.stopEvent.set()
-        self.display_object.Close()
+        if not self.mainWnd.stopEvent.is_set():
+            self.mainWnd.stopEvent.set()
+        self.mainWnd.Close()
         self.ChosedTime = self.ui.choose_time.currentText()
-        self.display_object.ui.label_road_text.setText(self.ChosedRoad)
+        self.mainWnd.ui.label_road_text.setText(self.ChosedRoad)
 
         if self.ChosedTime == "所有时间" and self.ChosedRoad != "所有路口":
             PATH.setValue('RoadName', self.ChosedRoad)
@@ -70,12 +92,13 @@ class roadchoosedialog(QDialog):
                 PATH.setValue('RoadName', self.ChosedRoad)
                 PATH.setValue('CVedioDate', self.ChosedTime)
                 Vedio_OutFileName = PATH.detect_result_path + self.ChosedRoad + '\\'+ self.ChosedTime+"\\Vedio_out.avi"
-                self.display_object.fileName = Vedio_OutFileName
-                self.display_object.specialroad = True
+                self.mainWnd.fileName = Vedio_OutFileName
+                self.mainWnd.specialroad = True
                 self.show_processed_info.emit()
             except:
                 dig = QMessageBox.warning(self, "警告", "未找到目标视频文件", QMessageBox.Yes)
-        self.display_object.ui.label_date_text.setText(self.ChosedTime)
+        self.mainWnd.ui.label_date_text.setText(self.ChosedTime)
+        
 
 
 class Worker(QObject):
@@ -122,6 +145,7 @@ class Display:
         self.ui.actionHelp.triggered.connect(self.helpdig)
         self.ui.action_SetRoad.triggered.connect(self.set_road)
         self.ui.action_choose_road.triggered.connect(self.choose_road)
+        
 
         # 创建一个关闭事件并设为未触发
         self.stopEvent = threading.Event()
@@ -225,7 +249,6 @@ class Display:
     def show_processed_vedio(self):
         """显示detected视频以及违法信息"""
         #违章表格初始化
-        print(PATH.run_a_red_lightpath())
         with open(PATH.run_a_red_lightpath(),  encoding='UTF-8') as fp:
             data =[]
             data = fp.readlines()
@@ -249,7 +272,7 @@ class Display:
         # 创建视频显示线程
         self.ui.tableView.setModel(self.model)
         print("开始播放")
-        self.cap = cv2.VideoCapture(PATH.run_a_red_light_vedio_path() + "Vedio_out.avi")
+        self.cap = cv2.VideoCapture(PATH.run_a_red_light_vedio_path())
         self.frameRate = self.cap.get(cv2.CAP_PROP_FPS)
         th1 = threading.Thread(target=self.Display)
         th1.start()
@@ -287,13 +310,8 @@ class Display:
         """路口名称设置"""
         PATH.bool_alltimes = False
         PATH.bool_allroads = False
-        text, okPressed = QInputDialog.getText(self.mainWnd, "提示","输入当前路口：", QLineEdit.Normal, "")
-        if okPressed and text != '':
-            print("当前检测路口为:" + text)
-            PATH.setValue('RoadName', text)
-            self.mainWnd.ui.label_road_text.setText(PATH.get_roadname())
-        else:
-            box = QMessageBox.information(self.mainWnd, "提示", "当前未设置路口", QMessageBox.Yes)
+        self.SetRoad_Dig = SetRoad_dialog(self)
+        self.SetRoad_Dig.show()
         
 
     def choose_road(self):

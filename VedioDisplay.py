@@ -11,7 +11,7 @@ from PyQt5.QtGui import QImage, QPixmap
 from PyQt5.QtGui import  QStandardItemModel,QStandardItem
 
 import gui.PATH as PATH
-from myvideo import detect
+from myvideo import detect2
 from gui.Ui_help import Ui_Dialog
 from gui.Ui_RoadChoose import Ui_Dialog_chooseRoad
 from gui.Ui_SetRoad import Ui_SetRoad_dialog
@@ -38,9 +38,9 @@ class SetRoad_dialog(QDialog):
     
     def set_road(self):
         """路口设置对话框响应函数"""
-        self.ui.Open.setEnabled(True)
-        self.ui.Button_imgout.setEnabled(True)
-        self.ui.Button_infoout.setEnabled(True)
+        self.mainWnd.ui.Open.setEnabled(True)
+        self.mainWnd.ui.Button_imgout.setEnabled(True)
+        self.mainWnd.ui.Button_infoout.setEnabled(True)
         if self.ui.Text_NewRoad.toPlainText() is '' and self.ui.Box_Existed_Roads.currentIndex() is not -1:
             PATH.setValue('RoadName', self.ui.Box_Existed_Roads.currentText())
             self.mainWnd.ui.label_road_text.setText(self.ui.Box_Existed_Roads.currentText())
@@ -51,9 +51,9 @@ class SetRoad_dialog(QDialog):
             dig = QMessageBox.warning(self, "警告", "当前未设置路口！", QMessageBox.Yes)
             return
         dig = QMessageBox.information(self, "提示", "路口设置成功", QMessageBox.Yes)
-        self.ui.Open.setEnabled(True)
-        self.ui.Button_imgout.setEnabled(True)
-        self.ui.Button_infoout.setEnabled(True)
+        self.mainWnd.ui.Open.setEnabled(True)
+        self.mainWnd.ui.Button_imgout.setEnabled(True)
+        self.mainWnd.ui.Button_infoout.setEnabled(True)
 
 
 class roadchoosedialog(QDialog):
@@ -100,8 +100,8 @@ class roadchoosedialog(QDialog):
             try:
                 PATH.setValue('RoadName', self.ChosedRoad)
                 PATH.setValue('CVedioDate', self.ChosedTime)
-                Vedio_OutFileName = PATH.detect_result_path + self.ChosedRoad + '\\'+ self.ChosedTime+"\\Vedio_out.avi"
-                self.mainWnd.fileName = Vedio_OutFileName
+                Vedio_OutFileName = PATH.detect_result_path + self.ChosedRoad + '\\'+ self.ChosedTime+"\\"+"Vedio_out.avi"
+                self.mainWnd.Vedioplayname = Vedio_OutFileName
                 self.mainWnd.specialroad = True
                 self.show_processed_info.emit()
             except:
@@ -113,10 +113,11 @@ class roadchoosedialog(QDialog):
         
 
 class Worker(QObject):
-    def __init__(self, in_name, out_name):
+    def __init__(self, in_name, out_name,light_Pos):
         super().__init__()
         self.fileName = in_name
         self.video_outname = out_name
+        self.light_Pos = light_Pos
 
     finished = pyqtSignal()
     show_processed_vedio = pyqtSignal()
@@ -124,7 +125,7 @@ class Worker(QObject):
     @pyqtSlot()
     def work(self): # A slot takes no params
         print("检测开始")
-        detect(self.fileName,self.video_outname)
+     #   detect2(self.fileName,self.video_outname,self.light_Pos)
         self.finished.emit()
         self.show_processed_vedio.emit()
         print("检测结束")
@@ -137,6 +138,7 @@ class Display:
         self.stop = False
         self.specialroad = False
         self.fileName = ''
+        self.Vedioplayname = ''
         
         #界面所有按钮的初始化
         self.ui.Open.setEnabled(True)
@@ -168,19 +170,18 @@ class Display:
 
     def Open(self):
         """打开视频原文件按钮响应函数"""
-        self.video_outname = ''
-        if not self.specialroad:
-            self.fileName, self.fileType = QFileDialog.getOpenFileName(self.mainWnd, 'Choose file', '', '*.avi')
-            if self.fileName is None or '.avi' not in self.fileName:
-                return
-            if 'out' not in self.video_outname: 
-                VedioDate = time.ctime(os.path.getctime(self.fileName))
-                VedioDate = VedioDate.replace(' ', "_").replace(':', '_').replace('__', '_')
-                PATH.setValue('CVedioDate', VedioDate)
-                self.mainWnd.label_date_text.setText(PATH.get_VedioDate)
-                self.video_outname = PATH.run_a_red_light_vedio_path() + "Vedio_out.avi"
+        self.fileName, self.fileType = QFileDialog.getOpenFileName(self.mainWnd, 'Choose file', '', '*.avi')
+        if self.fileName is None or '.avi' not in self.fileName:
+            return
+        elif 'out' not in self.fileName: 
+            VedioDate = time.ctime(os.path.getctime(self.fileName))
+            VedioDate = VedioDate.replace(' ', "_").replace(':', '_').replace('__', '_')
+            PATH.setValue('CVedioDate', VedioDate)
+            self.ui.label_date_text.setText(PATH.get_VedioDate())
+            self.video_outname = PATH.run_a_red_light_vedio_path() 
 
         # 创建视频显示线程
+        self.Vedioplayname = self.fileName
         th = threading.Thread(target=self.Display)
         th.start()
         
@@ -198,12 +199,10 @@ class Display:
 
     def Display(self):
         """视频展示函数"""
+        print(self.Vedioplayname)
         self.specialroad = False
-        self.cap = cv2.VideoCapture(self.fileName)
+        self.cap = cv2.VideoCapture(self.Vedioplayname)
         self.frameRate = self.cap.get(cv2.CAP_PROP_FPS)
-
-        if self.mainWnd.checkstat is True:
-            self.stop = False
 
         self.ui.Open.setEnabled(False)
         self.ui.Close.setEnabled(True)
@@ -211,7 +210,12 @@ class Display:
         self.ui.Api_button.setEnabled(True)
         self.ui.Button_GetPos.setEnabled(True)
         
+
         while self.cap.isOpened():
+            if self.mainWnd.checkstat is True:
+                self.stop = True
+            else:
+                self.stop = False
             if not self.stop:
                 success, frame = self.cap.read()
                 # RGB转BGR
@@ -243,10 +247,8 @@ class Display:
             print(self.video_outname)
             PATH.cheackFolders()
             
-            tuple_Pos = self.mainWnd.x, self.mainWnd.y
-            print(tuple_Pos)
-            print(tuple_Pos[0])
-            self.worker = Worker(self.fileName, self.video_outname)
+            self.Pos_list = self.mainWnd.pos_list
+            self.worker = Worker(self.fileName, self.video_outname, self.Pos_list)
             self.worker.finished.connect(self.thread.quit)
             self.thread.started.connect(self.worker.work)
             self.worker.show_processed_vedio.connect(self.show_processed_vedio)
@@ -259,13 +261,14 @@ class Display:
             self.worker.moveToThread(self.thread)
             self.thread.start()
         except:
-            dig = QMessageBox.warning(self, "警告", "错误操作！可选择再次打开程序", QMessageBox.Yes)
+            dig = QMessageBox.warning(self.mainWnd, "警告", "错误操作！可选择再次打开程序", QMessageBox.Yes)
 
 
     def show_processed_vedio(self):
         """显示detected视频以及违法信息"""
         #违章表格初始化
-        with open(PATH.run_a_red_lightpath(),  encoding='UTF-8') as fp:
+        
+        with open(PATH.run_a_red_lightpath(), 'r', encoding='UTF-8') as fp:
             data =[]
             data = fp.readlines()
             if '\n' in data:
@@ -273,7 +276,7 @@ class Display:
             row_lenth = len(data)
         self.ui.label_roadinfo.setPixmap(QPixmap(PATH.infomation_path()))
         self.ui.label_roadinfo.setScaledContents(True)
-        self.model=QStandardItemModel()#存储任意结构数据
+        self.model = QStandardItemModel()#存储任意结构数据
         self.model.setHorizontalHeaderLabels(['车牌号码','违章类型'])
         self.ui.tableView.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
         for row in range(row_lenth):
@@ -286,6 +289,8 @@ class Display:
         self.ui.tableView.setModel(self.model)
 
         # 创建视频显示线程
+        if self.specialroad is not True:
+            self.Vedioplayname = self.video_outname
         self.th1 = threading.Thread(target=self.Display)
         self.th1.start()
 
@@ -298,8 +303,8 @@ class Display:
         try:
             with open(PATH.resultpath, "w", encoding='UTF-8') as fp:
                 pass
-            img_path = [PATH.caroutputpath, PATH.caridpath, PATH.trafficoutputpath]
-            for i in range(0,3):
+            img_path = [PATH.caroutputpath, PATH.caridpath, PATH.trafficoutputpath,PATH.normalcaridpath]
+            for i in range(0,4):
                 os.chdir(img_path[i])
                 fileList = list(os.listdir()) 
                 for file in fileList: 

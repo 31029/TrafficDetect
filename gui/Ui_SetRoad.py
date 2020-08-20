@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file 'f:\mytraffic_cv\gui\SetRoad.ui'
+# Form implementation generated from reading ui file 'f:\YoloProject\mytraffic_cv\gui\SetRoad.ui'
 #
 # Created by: PyQt5 UI code generator 5.6
 #
@@ -19,7 +19,7 @@ class Ui_SetRoad_dialog(object):
         self.pushButton_quit.setGeometry(QtCore.QRect(290, 210, 93, 28))
         self.pushButton_quit.setObjectName("pushButton_quit")
         self.label = QtWidgets.QLabel(SetRoad_dialog)
-        self.label.setGeometry(QtCore.QRect(20, 120, 151, 31))
+        self.label.setGeometry(QtCore.QRect(20, 120, 251, 31))
         font = QtGui.QFont()
         font.setFamily("Agency FB")
         font.setPointSize(14)
@@ -32,7 +32,7 @@ class Ui_SetRoad_dialog(object):
         self.Box_Existed_Roads.setGeometry(QtCore.QRect(20, 40, 361, 31))
         self.Box_Existed_Roads.setObjectName("Box_Existed_Roads")
         self.label_2 = QtWidgets.QLabel(SetRoad_dialog)
-        self.label_2.setGeometry(QtCore.QRect(20, 0, 141, 31))
+        self.label_2.setGeometry(QtCore.QRect(20, 0, 251, 31))
         font = QtGui.QFont()
         font.setFamily("Agency FB")
         font.setPointSize(14)
@@ -47,13 +47,6 @@ class Ui_SetRoad_dialog(object):
         font.setWeight(75)
         self.label_3.setFont(font)
         self.label_3.setObjectName("label_3")
-        self.pushButton_ok.raise_()
-        self.pushButton_quit.raise_()
-        self.label.raise_()
-        self.Text_NewRoad.raise_()
-        self.Box_Existed_Roads.raise_()
-        self.label_2.raise_()
-        self.label_3.raise_()
 
         self.retranslateUi(SetRoad_dialog)
         self.pushButton_ok.clicked.connect(SetRoad_dialog.accept)

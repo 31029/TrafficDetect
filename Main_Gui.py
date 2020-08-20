@@ -47,13 +47,14 @@ class mywindow(QtWidgets.QMainWindow):
 
     def mousePressEvent(self, event):
         if self.checkstat is True:
-            pos=event.x(),event.y()
+            pos = event.x(),event.y()
             self.pos_list.append(pos)
             print(self.pos_list)
-            if (len(self.pos_list)==1):
+            if (len(self.pos_list) == 1):
                 dig = QMessageBox.information(self, "提示", "直行红绿灯坐标参数获取成功！", QMessageBox.Yes)
             elif (len(self.pos_list)==2):
                 dig = QMessageBox.information(self, "提示", "停车线纵坐标参数获取成功！", QMessageBox.Yes)
+                self.checkstat = False
             else:
                 dig = QMessageBox.warning(self, "警告", "获取坐标参数过多！", QMessageBox.Yes)
                 self.pos_list.pop()

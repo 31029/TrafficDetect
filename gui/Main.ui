@@ -67,7 +67,7 @@
      </font>
     </property>
     <property name="text">
-     <string>                                                            视频播放区域</string>
+     <string>                                                  视频播放区域</string>
     </property>
     <property name="textFormat">
      <enum>Qt::AutoText</enum>
@@ -97,7 +97,7 @@
      <rect>
       <x>810</x>
       <y>10</y>
-      <width>111</width>
+      <width>131</width>
       <height>31</height>
      </rect>
     </property>
@@ -116,9 +116,9 @@
    <widget class="QLabel" name="label_road_text">
     <property name="geometry">
      <rect>
-      <x>940</x>
+      <x>950</x>
       <y>10</y>
-      <width>181</width>
+      <width>201</width>
       <height>31</height>
      </rect>
     </property>
@@ -244,7 +244,7 @@
     <property name="font">
      <font>
       <family>Agency FB</family>
-      <pointsize>11</pointsize>
+      <pointsize>9</pointsize>
      </font>
     </property>
     <property name="text">
@@ -306,7 +306,7 @@
     <property name="font">
      <font>
       <family>Agency FB</family>
-      <pointsize>12</pointsize>
+      <pointsize>10</pointsize>
      </font>
     </property>
     <property name="text">
@@ -349,7 +349,7 @@
      <rect>
       <x>810</x>
       <y>50</y>
-      <width>81</width>
+      <width>121</width>
       <height>31</height>
      </rect>
     </property>
@@ -368,9 +368,9 @@
    <widget class="QLabel" name="label_date_text">
     <property name="geometry">
      <rect>
-      <x>900</x>
+      <x>940</x>
       <y>50</y>
-      <width>251</width>
+      <width>211</width>
       <height>31</height>
      </rect>
     </property>
@@ -426,7 +426,7 @@
      </font>
     </property>
     <property name="text">
-     <string>                             车流量信息展示区域</string>
+     <string>                   车流量信息展示区域</string>
     </property>
    </widget>
   </widget>

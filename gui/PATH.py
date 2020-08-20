@@ -30,7 +30,9 @@ detect_result_path = ProjectPath + "detect_result\\"
 trafficoutputpath  =  detect_result_path + "cache\\traffic\\"
 caroutputpath  =  detect_result_path + "cache\\car\\"
 resultpath = detect_result_path + "cache\\result.txt"
-caridpath=ProjectPath + detect_result_path + "cache\\carid\\"
+caridpath=detect_result_path + "cache\\carid\\"
+normalcaridpath= detect_result_path + "cache\\normalcars\\"
+all_illegal_car_info_path= detect_result_path + "all_illegal_car_info.txt"
 
 model_ocr_plate_all_w_rnn_2 = ProjectPath + "mytraffic_cv\\model\\ocr_plate_all_w_rnn_2.h5"
 
@@ -47,6 +49,10 @@ model_model12 = ProjectPath +"mytraffic_cv\\model\\model12.h5"
 model_ocr_plate_all_gru = ProjectPath + "mytraffic_cv\\model\\ocr_plate_all_gru.h5"
 model_plate_type = ProjectPath + "mytraffic_cv\\model\\plate_type.h5"
 
+model_path=ProjectPath+"mytraffic_cv\\model_data\\yolo_weights.h5"
+anchors_path=ProjectPath+"mytraffic_cv\\model_data\\yolo_anchors.txt"
+classes_path=ProjectPath+"mytraffic_cv\\model_data\\coco_classes.txt"
+fontpath=ProjectPath+"mytraffic_cv\\font\\platech.ttf"
 
 #全局函数
 def setValue(name:str, value:str):
@@ -68,12 +74,6 @@ def get_VedioDate() -> str:
         return _global_dict['default_date']
 
 #文件夹操作API
-for root, subdirs, files in os.walk(detect_result_path):
-    _global_dict['all_roads'] = subdirs
-    _global_dict['all_roads'].remove('cache')
-    break
-
-
 ##变化的存储路径的默认值
 def Road_ROOTpath():
     return detect_result_path + get_roadname() + "\\"
@@ -101,6 +101,10 @@ def infomation_path():
 ##复杂操作
 def get_allroads() -> List:
     """获取所有路口名"""
+    for root, subdirs, files in os.walk(detect_result_path):
+        _global_dict['all_roads'] = subdirs
+        _global_dict['all_roads'].remove('cache')
+        break
     try:
         return _global_dict['all_roads']
     except KeyError:
@@ -136,12 +140,12 @@ def get_allroads_imgs_paths() -> List:
 
 def cheackFolders():
     """创建变化文件夹函数"""
-    Road_ROOTpath = ProjectPath + detect_result_path + get_roadname() + "\\"
-    Road_illegal_Info = Road_ROOTpath + get_VedioDate()
-    Road_Paths = [Road_ROOTpath, Road_illegal_Info,run_a_red_light_vedio_path(), run_a_red_light_img_path()]
+    Road_illegal_Info = Road_ROOTpath() + get_VedioDate() + "\\"
+    Road_Paths = [Road_ROOTpath(), Road_illegal_Info,  run_a_red_light_img_path()]
     for _ in Road_Paths:
         if not os.path.exists(_):
             os.mkdir(_)
 
 
 
+get_allroads()

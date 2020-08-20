@@ -12,7 +12,7 @@ from utils.utils import letterbox_image
 from trafficlight_detetion import check,check1
 from lprcmd import cartag
 import cv2
-from gui.PATH import caroutputpath,trafficoutputpath,resultpath,run_a_red_lightpath,run_a_red_light_img_path,caridpath,model_path,classes_path,anchors_path
+from gui.PATH import all_illegal_car_info_path,normalcaridpath,caroutputpath,trafficoutputpath,resultpath,run_a_red_lightpath,run_a_red_light_img_path,caridpath,model_path,classes_path,anchors_path
 class YOLO(object):
     _defaults = {
         "model_path": model_path,
@@ -108,7 +108,7 @@ class YOLO(object):
     #---------------------------------------------------#
     #   检测图片
     #---------------------------------------------------#
-    def detect_image(self, image,trfn,carn,lrx,rrx,carnums,carlist):
+    def detect_image(self, image,trfn,carn,lrx,rrx,carnums,carlist,sy,ncarn):
         run_a_red_light=0
         totalcarn=0
         #list_num=len(carlist)
@@ -188,6 +188,7 @@ class YOLO(object):
                             
                             f1=open(resultpath, "a", encoding='utf-8')
                             f2=open(run_a_red_lightpath(), "a", encoding='utf-8') 
+                            f3=open(all_illegal_car_info_path, "a", encoding='utf-8') 
                             for cn ,cf in list(enumerate(out_classes)):
                                 if cf!=2:
                                     continue
@@ -241,8 +242,9 @@ class YOLO(object):
                                                 (right , top , right+150 , top+40),
                                                 fill=self.colors[cf])
                                         draw.text((right , top , right+30 , top+60), ch, fill=(0, 0, 0), font=font)
-                                        if (x>260 and ((top+bottom)/2)<900):
+                                        if (x>260 and ((top+bottom)/2)<sy):
                                             if ch is not '00000' and ch[1] is not '1' :
+                                                f3.write(ch+" 闯红灯"+"\n")
                                                 f2.write(ch+" 闯红灯"+"\n")
                                                 run_a_red_light+=1
                                             draw.rectangle(
@@ -251,9 +253,10 @@ class YOLO(object):
                                             draw.text((right , top+40, right+60 , top+120), "闯红灯", fill=(0, 0, 0), font=font)
                                             if ch is not '00000' and ch[1] is not '1' :
                                                 image.save(run_a_red_light_img_path()+ch+'_闯红灯'+".jpg")
-                                                
+                            f3.close()                    
                             f2.close()
                             f1.close()
+
                         elif temp=='green':
                             draw.rectangle(
                             (left , top , right , bottom ),
@@ -314,7 +317,28 @@ class YOLO(object):
                 fill=self.colors[c])
             draw.text(text_origin, str(label,'UTF-8'), fill=(0, 0, 0), font=font)
 
-            
+            if c==2:
+                ncarn=ncarn+1
+                img=image.crop((left , top , right , bottom ))
+                img.save(normalcaridpath+str(ncarn)+".jpg") 
+                cart=cartag(normalcaridpath+str(ncarn)+'.jpg')
+                draw.rectangle(
+                                (right , top , right+150 , top+40),fill=self.colors[c])
+                draw.text((right , top , right+30 , top+60), cart, fill=(0, 0, 0), font=font)
+           
+            if top - label_size[1] >= 0:
+                text_origin = np.array([left, top - label_size[1]])
+            else:
+                text_origin = np.array([left, top + 1])
+
+            draw.rectangle(
+                    (left , top , right , bottom ),
+                    outline=self.colors[c],width=2)
+            draw.rectangle(
+                [tuple(text_origin), tuple(text_origin + label_size)],
+                fill=self.colors[c])
+            draw.text(text_origin, str(label,'UTF-8'), fill=(0, 0, 0), font=font)
+
             if c==2 or c==3 or c==5 or c==7:
                 totalcarn+=1
             del draw
@@ -358,7 +382,7 @@ class YOLO(object):
         del draw
         # end = timer()
         # print(end - start) 
-        return image,trfn,carn,carnums,len(carlist), run_a_red_light,totalcarn
+        return image,trfn,carn,carnums,len(carlist), run_a_red_light,totalcarn,ncarn
 
     def close_session(self):
         self.sess.close()
